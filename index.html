@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>矩阵LU分解计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        main {
+            padding: 40px;
+        }
+
+        .input-section {
+            margin-bottom: 40px;
+        }
+
+        .matrix-size-control {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .matrix-size-control label {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .size-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .size-input input {
+            width: 60px;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .size-input input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .matrix-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .matrix-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .matrix-grid {
+            display: inline-block;
+            border-left: 3px solid #333;
+            border-right: 3px solid #333;
+            padding: 10px 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .matrix-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .matrix-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .matrix-cell {
+            width: 80px;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .matrix-cell:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .result-section {
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-matrices {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .matrix-display {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .matrix-display h3 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .display-matrix {
+            display: inline-block;
+            border-left: 3px solid #333;
+            border-right: 3px solid #333;
+            padding: 15px 25px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .display-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            justify-content: center;
+        }
+
+        .display-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .display-cell {
+            width: 80px;
+            padding: 8px;
+            font-size: 1rem;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .error-message.show {
+            display: flex;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .info-box {
+            background: #e8f4fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .info-box p {
+            color: #1976d2;
+            line-height: 1.6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            main {
+                padding: 20px;
+            }
+            
+            .matrix-cell {
+                width: 60px;
+                font-size: 0.9rem;
+            }
+            
+            .display-cell {
+                width: 60px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>矩阵LU分解计算器</h1>
+            <p>将方阵分解为下三角矩阵L和上三角矩阵U的乘积</p>
+        </header>
+        
+        <main>
+            <section class="input-section">
+                <div class="info-box">
+                    <p>💡 LU分解将矩阵A分解为A = LU，其中L是下三角矩阵（主对角线为1），U是上三角矩阵。注意：只有非奇异方阵才能进行LU分解。</p>
+                </div>
+                
+                <div class="matrix-size-control">
+                    <label>矩阵维度：</label>
+                    <div class="size-input">
+                        <input type="number" id="matrixSize" value="3" min="2" max="6">
+                        <span>× <span id="sizeDisplay">3</span></span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="generateMatrix()">
+                        <span>🔄</span> 生成矩阵
+                    </button>
+                </div>
+                
+                <div class="matrix-container">
+                    <div class="matrix-title">
+                        <span>📊</span> 输入矩阵 A
+                    </div>
+                    <div id="inputMatrix" class="matrix-grid"></div>
+                    
+                    <div class="controls">
+                        <button class="btn btn-primary" onclick="performLUDecomposition()">
+                            <span>🧮</span> 执行LU分解
+                        </button>
+                        <button class="btn btn-secondary" onclick="fillRandomMatrix()">
+                            <span>🎲</span> 随机填充
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearMatrix()">
+                            <span>🗑️</span> 清空
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="errorMessage" class="error-message">
+                    <span>⚠️</span>
+                    <span id="errorText"></span>
+                </div>
+            </section>
+            
+            <section id="resultSection" class="result-section">
+                <h2 style="font-size: 1.8rem; color: #333; margin-bottom: 20px;">分解结果</h2>
+                <p style="color: #666; margin-bottom: 30px;">A = L × U</p>
+                
+                <div class="result-matrices">
+                    <div class="matrix-display">
+                        <h3>下三角矩阵 L</h3>
+                        <div id="matrixL" class="display-matrix"></div>
+                    </div>
+                    
+                    <div class="matrix-display">
+                        <h3>上三角矩阵 U</h3>
+                        <div id="matrixU" class="display-matrix"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let currentSize = 3;
+
+        // 初始化页面
+        window.onload = function() {
+            generateMatrix();
+            
+            // 监听矩阵大小变化
+            document.getElementById('matrixSize').addEventListener('input', function(e) {
+                const size = parseInt(e.target.value);
+                if (size >= 2 && size <= 6) {
+                    currentSize = size;
+                    document.getElementById('sizeDisplay').textContent = size;
+                    generateMatrix();
+                }
+            });
+        };
+
+        // 生成矩阵输入框
+        function generateMatrix() {
+            const container = document.getElementById('inputMatrix');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < currentSize; i++) {
+                const row = document.createElement('div');
+                row.className = 'matrix-row';
+                
+                for (let j = 0; j < currentSize; j++) {
+                    const cell = document.createElement('input');
+                    cell.type = 'number';
+                    cell.className = 'matrix-cell';
+                    cell.id = `cell-${i}-${j}`;
+                    cell.step = 'any';
+                    cell.value = i === j ? '1' : '0';
+                    
+                    // 添加键盘导航
+                    cell.addEventListener('keydown', function(e) {
+                        navigateMatrix(e, i, j);
+                    });
+                    
+                    row.appendChild(cell);
+                }
+                
+                container.appendChild(row);
+            }
+            
+            hideError();
+            hideResult();
+        }
+
+        // 键盘导航
+        function navigateMatrix(e, row, col) {
+            const key = e.key;
+            
+            if (key === 'ArrowUp' && row > 0) {
+                e.preventDefault();
+                document.getElementById(`cell-${row-1}-${col}`).focus();
+            } else if (key === 'ArrowDown' && row < currentSize - 1) {
+                e.preventDefault();
+                document.getElementById(`cell-${row+1}-${col}`).focus();
+            } else if (key === 'ArrowLeft' && col > 0) {
+                e.preventDefault();
+                document.getElementById(`cell-${row}-${col-1}`).focus();
+            } else if (key === 'ArrowRight' && col < currentSize - 1) {
+                e.preventDefault();
+                document.getElementById(`cell-${row}-${col+1}`).focus();
+            }
+        }
+
+        // 获取矩阵数据
+        function getMatrixData() {
+            const matrix = [];
+            for (let i = 0; i < currentSize; i++) {
+                const row = [];
+                for (let j = 0; j < currentSize; j++) {
+                    const value = parseFloat(document.getElementById(`cell-${i}-${j}`).value);
+                    if (isNaN(value)) {
+                        throw new Error(`矩阵第${i+1}行第${j+1}列的值无效`);
+                    }
+                    row.push(value);
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+
+        // LU分解算法
+        function luDecomposition(matrix) {
+            const n = matrix.length;
+            const L = Array(n).fill().map(() => Array(n).fill(0));
+            const U = Array(n).fill().map(() => Array(n).fill(0));
+            
+            // 初始化L的对角线为1
+            for (let i = 0; i < n; i++) {
+                L[i][i] = 1;
+            }
+            
+            // 执行LU分解
+            for (let i = 0; i < n; i++) {
+                // 计算U的第i行
+                for (let j = i; j < n; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < i; k++) {
+                        sum += L[i][k] * U[k][j];
+                    }
+                    U[i][j] = matrix[i][j] - sum;
+                }
+                
+                // 检查U[i][i]是否为0（矩阵不可分解）
+                if (Math.abs(U[i][i]) < 1e-10) {
+                    throw new Error('矩阵不可进行LU分解（主元为0）');
+                }
+                
+                // 计算L的第i列
+                for (let j = i + 1; j < n; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < i; k++) {
+                        sum += L[j][k] * U[k][i];
+                    }
+                    L[j][i] = (matrix[j][i] - sum) / U[i][i];
+                }
+            }
+            
+            return { L, U };
+        }
+
+        // 执行LU分解
+        function performLUDecomposition() {
+            try {
+                hideError();
+                const matrix = getMatrixData();
+                const { L, U } = luDecomposition(matrix);
+                
+                displayResult(L, U);
+                showResult();
+            } catch (error) {
+                showError(error.message);
+                hideResult();
+            }
+        }
+
+        // 显示结果
+        function displayResult(L, U) {
+            displayMatrix('matrixL', L);
+            displayMatrix('matrixU', U);
+        }
+
+        // 显示单个矩阵
+        function displayMatrix(containerId, matrix) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            for (let i = 0; i < matrix.length; i++) {
+                const row = document.createElement('div');
+                row.className = 'display-row';
+                
+                for (let j = 0; j < matrix[i].length; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'display-cell';
+                    cell.textContent = formatNumber(matrix[i][j]);
+                    row.appendChild(cell);
+                }
+                
+                container.appendChild(row);
+            }
+        }
+
+        // 格式化数字显示
+        function formatNumber(num) {
+            if (Math.abs(num) < 1e-10) return '0';
+            if (Math.abs(num - Math.round(num)) < 1e-10) return Math.round(num).toString();
+            return num.toFixed(4);
+        }
+
+        // 随机填充矩阵
+        function fillRandomMatrix() {
+            for (let i = 0; i < currentSize; i++) {
+                for (let j = 0; j < currentSize; j++) {
+                    const value = Math.floor(Math.random() * 20) - 10;
+                    document.getElementById(`cell-${i}-${j}`).value = value;
+                }
+            }
+            hideError();
+            hideResult();
+        }
+
+        // 清空矩阵
+        function clearMatrix() {
+            for (let i = 0; i < currentSize; i++) {
+                for (let j = 0; j < currentSize; j++) {
+                    document.getElementById(`cell-${i}-${j}`).value = '';
+                }
+            }
+            hideError();
+            hideResult();
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        // 隐藏错误信息
+        function hideError() {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.classList.remove('show');
+        }
+
+        // 显示结果
+        function showResult() {
+            const resultSection = document.getElementById('resultSection');
+            resultSection.classList.add('show');
+        }
+
+        // 隐藏结果
+        function hideResult() {
+            const resultSection = document.getElementById('resultSection');
+            resultSection.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
